@@ -38,9 +38,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importStar(require("express"));
 const utils_1 = require("./utils");
-const routes_1 = __importDefault(require("./routes/routes"));
 const path_1 = require("path");
+const routes_1 = __importDefault(require("./routes/routes"));
 const os_1 = require("os");
+const mongoose_1 = require("mongoose");
 const app = (0, express_1.default)();
 const port = (0, utils_1.config)("app.port");
 const clientStaticPath = (0, path_1.join)(__dirname, "../../frontend");
@@ -58,4 +59,12 @@ app.listen(port, () => {
         const networkHost = wifi[1].address;
         console.log(`Network Server: http://${networkHost}:${port}`);
     }
+    const databaseUri = (0, utils_1.config)("services.database.uri");
+    (0, mongoose_1.connect)(databaseUri)
+        .then(() => {
+        console.log(`Connected to database`);
+    })
+        .catch((error) => {
+        console.error(error);
+    });
 });

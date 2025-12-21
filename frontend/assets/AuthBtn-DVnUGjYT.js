@@ -1,0 +1,1 @@
+import{j as s}from"./index-BLSFfZ90.js";const u=({label:o,onClick:r,disabled:t=!1,...e})=>s.jsx("button",{onClick:r,className:"w-full text-white uppercase py-2 rounded-full transition "+(t?"cursor-not-allowed bg-gray-300":"cursor-pointer bg-[#42ACDE] hover:bg-[#3F8FB5]"),disabled:t,...e,children:o});export{u as A};
