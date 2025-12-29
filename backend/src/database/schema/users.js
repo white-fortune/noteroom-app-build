@@ -32,7 +32,11 @@ const usersSchema = new mongoose_1.Schema({
     },
     password: {
         type: String,
-        required: true
+        required: false
+    },
+    authProvider: {
+        type: String,
+        default: null
     },
     createdAt: {
         type: Date,
@@ -43,7 +47,7 @@ usersSchema.index({ email: 1 }, { unique: true });
 usersSchema.pre('save', function () {
     if (!this.isNew)
         return;
-    this.profileImageUrl = `https://placehold.co/400x600?text=${this.username.toUpperCase()[0]}`;
+    this.profileImageUrl = this.profileImageUrl || `https://placehold.co/400x600?text=${this.username.toUpperCase()[0]}`;
     this.coverImageUrl = `https://placehold.co/400x600?text=Cover Image`;
 });
 const usersModel = (0, mongoose_1.model)('users', usersSchema);

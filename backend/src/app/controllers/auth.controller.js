@@ -7,6 +7,8 @@ const users_1 = __importDefault(require("../../database/schema/users"));
 const users_service_1 = __importDefault(require("../services/users.service"));
 const jwt_service_1 = __importDefault(require("../services/jwt.service"));
 const users_2 = __importDefault(require("../../database/schema/users"));
+const auth_service_1 = __importDefault(require("../services/auth.service"));
+const utils_1 = require("../utils");
 class AuthController {
     static async login(req, res, next) {
         try {
@@ -38,9 +40,7 @@ class AuthController {
     static async signup(req, res, next) {
         try {
             const { name, email, password } = req.body;
-            const base = email.split("@")[0].trim().toLowerCase().replace(/[*+~.()'"!:@]/g, "_");
-            const suffix_number = Math.floor(1000 + Math.random() * 9000);
-            const username = `${base}_${suffix_number}`;
+            const username = (0, utils_1.generateUsernameFromEmail)(email);
             const user = await users_1.default.create({ username, email, name, password });
             const jwtUser = {
                 name,
@@ -88,6 +88,44 @@ class AuthController {
         catch (error) {
             console.error(error);
             res.json({ ok: false, message: "Unexpected Server Error" });
+        }
+    }
+    static async googleAuth(req, res, next) {
+        try {
+            const { credential } = req.body;
+            const response = await auth_service_1.default.verifyGoogleCredential(credential);
+            if (!response.ok) {
+                return res.json({ ok: false, message: "Couldn't verify google signin" });
+            }
+            const { tokenVerified } = response;
+            if (!tokenVerified) {
+                return res.json({ ok: false, message: "Couldn't verify google signin" });
+            }
+            const { email, name, picture } = response.payload;
+            const username = (0, utils_1.generateUsernameFromEmail)(email);
+            let user = await users_1.default.findOne({ email: email });
+            if (!user) {
+                user = await users_1.default.create({ username, email, name, authProvider: "google", profileImageUrl: picture });
+            }
+            const authProvider = user.authProvider;
+            if (!authProvider) {
+                return res.json({ ok: false, message: "An account with this email already exists using a different sign-in method." });
+            }
+            const jwtUser = {
+                name: user.name,
+                email: user.email,
+                username: user.username,
+                _id: user._id
+            };
+            const jwtResponse = jwt_service_1.default.createJWTToken(jwtUser);
+            if (!jwtResponse.ok) {
+                return res.json({ ok: false, message: "Couldn't create authentication token. Try again a bit later" });
+            }
+            const token = jwtResponse.token;
+            res.json({ ok: true, token, user });
+        }
+        catch (error) {
+            res.json({ ok: false, message: 'Unexpected Server Error' });
         }
     }
 }

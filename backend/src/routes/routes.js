@@ -20,6 +20,7 @@ function AuthRouter() {
     authRouter.post("/login", auth_controller_1.default.login);
     authRouter.post("/signup", auth_controller_1.default.signup);
     authRouter.post("/me", auth_controller_1.default.me);
+    authRouter.post("/google", auth_controller_1.default.googleAuth);
     return authRouter;
 }
 function MediaHandlerRouter() {
