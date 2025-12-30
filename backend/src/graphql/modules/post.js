@@ -19,7 +19,8 @@ exports.BasePostInterface.implement({
         tags: t.exposeStringList("tags"),
         titleSlug: t.exposeString("titleSlug"),
         author: t.expose("author", { type: user_1.UserType }),
-        media: t.exposeStringList("media")
+        media: t.exposeStringList("media"),
+        replyCount: t.exposeInt("replyCount")
     })
 });
 exports.PostType = builder_1.builder.objectRef("Post");
@@ -83,7 +84,7 @@ builder_1.builder.queryType({
                     const post = response.post;
                     if (!post)
                         return null;
-                    const viewerUsername = "rafi_rahman_pro";
+                    const viewerUsername = ctx.req.authUser.username;
                     const modifiedPost = Object.assign(post, { postOwner: viewerUsername === post.author.username });
                     return modifiedPost;
                 }
@@ -108,7 +109,7 @@ builder_1.builder.queryType({
                     if (!posts)
                         return null;
                     const modifiedPosts = posts.map((post) => {
-                        const viewerUsername = "rafi_rahman_pro";
+                        const viewerUsername = ctx.req.authUser.username;
                         const authorUsername = post.author.username;
                         return Object.assign(post, { postOwner: viewerUsername === authorUsername });
                     });

@@ -28,6 +28,10 @@ const basePostSchema = new mongoose_1.Schema({
         type: String,
         default: null
     },
+    replyCount: {
+        type: Number,
+        default: 0
+    },
     tags: {
         type: [String],
         default: []

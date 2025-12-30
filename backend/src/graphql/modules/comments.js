@@ -17,6 +17,7 @@ exports.CommentType.implement({
         content: t.exposeString("content"),
         commenter: t.expose("commenter", { type: user_1.UserType }),
         parentThreadID: t.exposeString("parentThreadID", { nullable: true }),
+        replyCount: t.exposeInt("replyCount"),
     })
 });
 builder_1.builder.mutationType({
@@ -74,7 +75,6 @@ builder_1.builder.queryType({
                     return comments;
                 }
                 catch (error) {
-                    console.error(error);
                     return null;
                 }
             }

@@ -26,6 +26,10 @@ const baseCommentSchema = new mongoose_1.Schema({
     content: {
         type: String
     },
+    replyCount: {
+        type: Number,
+        default: 0
+    },
     createdAt: {
         type: Date,
         default: Date.now()
