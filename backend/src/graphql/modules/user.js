@@ -23,6 +23,7 @@ exports.BaseUserInterface.implement({
             type: [post_1.PostWithViewerUserType],
             resolve: async (parent, __args, ctx) => {
                 try {
+                    const authUser = ctx.req.authUser;
                     const profileUsername = parent.username;
                     const profileUserID = await users_1.default.findOne({ username: profileUsername }, { _id: 1 });
                     if (!profileUserID?._id)
@@ -34,7 +35,7 @@ exports.BaseUserInterface.implement({
                     if (!posts)
                         return null;
                     const modifiedPosts = posts.map((post) => {
-                        const viewerUsername = "rafi_rahman_pro";
+                        const viewerUsername = authUser.username;
                         return Object.assign(post, { postOwner: viewerUsername === profileUsername });
                     });
                     return modifiedPosts;
@@ -67,7 +68,7 @@ builder_1.builder.queryType({
             },
             resolve: async (__parent, args, ctx) => {
                 try {
-                    const { username: authUsername } = ctx.req.authUser || { username: "rafi_rahman_pro" };
+                    const authUser = ctx.req.authUser;
                     const profileUsername = args.username;
                     const response = await users_service_1.default.getUserByUsername(profileUsername);
                     if (!response.ok)
@@ -75,7 +76,7 @@ builder_1.builder.queryType({
                     const profileUser = response.user;
                     if (!profileUser)
                         return null;
-                    const ownerOfProfile = authUsername === profileUser.username;
+                    const ownerOfProfile = authUser.username === profileUser.username;
                     const user = { ...profileUser, ownerOfProfile };
                     return user;
                 }

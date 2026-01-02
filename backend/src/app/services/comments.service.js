@@ -19,9 +19,13 @@ class CommentsService {
             return { ok: false, error };
         }
     }
-    static async getComment(postID, filters) {
+    static async getComment(postID, parentThreadID) {
         try {
-            const comments = await comments_1.default.find({ postID, ...filters }).populate("commenter");
+            const comments = await comments_1.default.find({ postID, parentThreadID }).populate("commenter");
+            if (parentThreadID) {
+                const threadParentComment = await comments_1.default.findOne({ postID, threadID: parentThreadID }).populate("commenter");
+                comments.unshift(threadParentComment);
+            }
             return { ok: true, comments };
         }
         catch (error) {

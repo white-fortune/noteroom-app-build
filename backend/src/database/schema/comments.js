@@ -30,6 +30,10 @@ const baseCommentSchema = new mongoose_1.Schema({
         type: Number,
         default: 0
     },
+    reactCount: {
+        type: Number,
+        default: 0
+    },
     createdAt: {
         type: Date,
         default: Date.now()

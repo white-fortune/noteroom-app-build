@@ -1,1 +1,0 @@
-import{r as t,j as a}from"./index-C-HgPblD.js";const e=t.createContext(null);function l({children:n}){const[s,r]=t.useState({});return a.jsx(e,{value:{rightPanelElements:[s,r]},children:n})}function i(){return t.useContext(e)}export{l as R,i as u};

@@ -9,6 +9,7 @@ const posts_service_1 = __importDefault(require("../../app/services/posts.servic
 const slugify_1 = __importDefault(require("slugify"));
 const nanoid_1 = require("nanoid");
 const user_1 = require("./user");
+const interactions_1 = require("../../database/schema/interactions");
 exports.BasePostInterface = builder_1.builder.interfaceRef("BasePost");
 exports.BasePostInterface.implement({
     fields: (t) => ({
@@ -20,7 +21,8 @@ exports.BasePostInterface.implement({
         titleSlug: t.exposeString("titleSlug"),
         author: t.expose("author", { type: user_1.UserType }),
         media: t.exposeStringList("media"),
-        replyCount: t.exposeInt("replyCount")
+        replyCount: t.exposeInt("replyCount"),
+        reactCount: t.exposeInt("reactCount")
     })
 });
 exports.PostType = builder_1.builder.objectRef("Post");
@@ -65,7 +67,20 @@ exports.PostWithViewerUserType = builder_1.builder.objectRef("PostWithViewerUser
 exports.PostWithViewerUserType.implement({
     interfaces: [exports.BasePostInterface],
     fields: (t) => ({
-        postOwner: t.exposeBoolean("postOwner")
+        postOwner: t.exposeBoolean("postOwner"),
+        reacted: t.boolean({
+            resolve: async (parent, _args, ctx) => {
+                try {
+                    const postID = parent.postID;
+                    const authUser = ctx.req.authUser;
+                    const interaction = await interactions_1.postInteractionModel.findOne({ user: authUser._id, postID });
+                    return interaction ? true : false;
+                }
+                catch (error) {
+                    return false;
+                }
+            }
+        })
     })
 });
 builder_1.builder.queryType({
