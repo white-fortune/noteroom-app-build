@@ -39,7 +39,7 @@ class MediaHandlerController {
             const body = { ...req.body };
             const filePaths = files.map(file => `/api/uploads/${file.filename}`);
             const postID = body.postID;
-            await posts_1.mediaPostModel.updateOne({ postID }, { media: filePaths });
+            await posts_1.mediaPostModel.updateOne({ postID }, { $push: { media: { $each: filePaths } } });
             res.json({ ok: true });
         }
         catch (error) {
