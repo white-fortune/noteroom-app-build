@@ -38,6 +38,18 @@ const usersSchema = new mongoose_1.Schema({
         type: String,
         default: null
     },
+    isVerified: {
+        type: Boolean,
+        default: false
+    },
+    otp: {
+        type: String,
+        required: false
+    },
+    otpExpiry: {
+        type: Date,
+        required: false
+    },
     createdAt: {
         type: Date,
         default: Date.now()
@@ -49,6 +61,9 @@ usersSchema.pre('save', function () {
         return;
     this.profileImageUrl = this.profileImageUrl || `https://placehold.co/400x600?text=${this.username.toUpperCase()[0]}`;
     this.coverImageUrl = `https://placehold.co/400x600?text=Cover Image`;
+    if (this.authProvider) {
+        this.isVerified = true;
+    }
 });
 const usersModel = (0, mongoose_1.model)('users', usersSchema);
 exports.default = usersModel;

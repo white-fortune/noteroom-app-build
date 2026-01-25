@@ -9,10 +9,13 @@ class UsersService {
         try {
             const user = await users_1.default.findOne({ ...authUser });
             if (!user) {
-                return { ok: true, validAuth: false };
+                return { ok: true, code: "NOT_VALID_AUTH" };
+            }
+            if (!user.isVerified) {
+                return { ok: true, code: "EMAIL_NOT_VERIFIED" };
             }
             const userObject = { ...user.toObject() };
-            return { ok: true, validAuth: true, user: userObject };
+            return { ok: true, user: userObject };
         }
         catch (error) {
             return { ok: false, error };

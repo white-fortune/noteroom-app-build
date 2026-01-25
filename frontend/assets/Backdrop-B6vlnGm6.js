@@ -1,0 +1,1 @@
+import{j as a}from"./index-B1xnd1eW.js";import{m as e}from"./proxy-DEv8yYt6.js";function s({zIndex:t,onClick:i,extendedClass:o}){return a.jsx(e.div,{initial:{opacity:0},animate:{opacity:1},exit:{opacity:0},className:`fixed inset-0 bg-black/20 z-${t} ${o} pointer-events-auto`,onClick:i})}export{s as B};

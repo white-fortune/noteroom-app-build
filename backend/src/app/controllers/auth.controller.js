@@ -9,6 +9,7 @@ const jwt_service_1 = __importDefault(require("../services/jwt.service"));
 const users_2 = __importDefault(require("../../database/schema/users"));
 const auth_service_1 = __importDefault(require("../services/auth.service"));
 const utils_1 = require("../utils");
+const email_service_1 = __importDefault(require("../services/email.service"));
 class AuthController {
     static async login(req, res, next) {
         try {
@@ -17,10 +18,17 @@ class AuthController {
             if (!response.ok) {
                 return res.json({ ok: false, message: 'Unexpected Server Error' });
             }
-            if (!response.validAuth) {
-                return res.json({ ok: true, validAuth: false });
+            if (response.code === "NOT_VALID_AUTH") {
+                return res.json({ ok: true, code: response.code });
             }
-            const { user } = response;
+            if (response.code === "EMAIL_NOT_VERIFIED") {
+                const otp = Math.floor(100000 + Math.random() * 900000).toString();
+                const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+                const user = (await users_1.default.findOneAndUpdate({ email }, { otp, otpExpiry }));
+                await email_service_1.default.sendOTPEmail(email, user.name, otp);
+                return res.json({ ok: true, code: response.code, maskedEmail: (0, utils_1.maskEmail)(email) });
+            }
+            const user = response.user;
             const jwtResponse = jwt_service_1.default.createJWTToken({
                 email,
                 name: user.username,
@@ -31,7 +39,7 @@ class AuthController {
                 return res.json({ ok: false, message: "Couldn't create authentication token. Try again a bit later" });
             }
             const token = jwtResponse.token;
-            res.json({ ok: true, validAuth: true, token, user });
+            res.json({ ok: true, token, user });
         }
         catch (error) {
             res.json({ ok: false, message: 'Unexpected Server Error' });
@@ -41,19 +49,19 @@ class AuthController {
         try {
             const { name, email, password } = req.body;
             const username = (0, utils_1.generateUsernameFromEmail)(email);
-            const user = await users_1.default.create({ username, email, name, password });
-            const jwtUser = {
-                name,
-                email,
+            const otp = Math.floor(100000 + Math.random() * 900000).toString();
+            const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+            const user = await users_1.default.create({
                 username,
-                _id: user._id
-            };
-            const jwtResponse = jwt_service_1.default.createJWTToken(jwtUser);
-            if (!jwtResponse.ok) {
-                return res.json({ ok: false, message: "Couldn't create authentication token. Try again a bit later" });
-            }
-            const token = jwtResponse.token;
-            res.json({ ok: true, token, user });
+                email,
+                name,
+                password,
+                isVerified: false,
+                otp,
+                otpExpiry
+            });
+            await email_service_1.default.sendOTPEmail(email, name, otp);
+            res.json({ ok: true, verificationRequired: true, maskedEmail: (0, utils_1.maskEmail)(email) });
         }
         catch (error) {
             if (error.code === 11000) {
@@ -65,6 +73,54 @@ class AuthController {
             else {
                 res.json({ ok: false, message: 'Unexpected Server Error' });
             }
+        }
+    }
+    static async verifyEmail(req, res, next) {
+        try {
+            const { email, otp } = req.body;
+            const user = await users_1.default.findOne({ email, otp });
+            if (!user) {
+                return res.json({ ok: false, message: "Invalid verification code" });
+            }
+            if (user.otpExpiry && user.otpExpiry < new Date()) {
+                return res.json({ ok: false, message: "Verification code has expired" });
+            }
+            user.isVerified = true;
+            user.otp = undefined;
+            user.otpExpiry = undefined;
+            await user.save();
+            const jwtUser = {
+                name: user.name,
+                email: user.email,
+                username: user.username,
+                _id: user._id
+            };
+            const jwtResponse = jwt_service_1.default.createJWTToken(jwtUser);
+            if (!jwtResponse.ok) {
+                return res.json({ ok: false, message: "Couldn't create authentication token" });
+            }
+            res.json({ ok: true, token: jwtResponse.token, user: user.toObject() });
+        }
+        catch (error) {
+            res.json({ ok: false, message: "Unexpected Server Error" });
+        }
+    }
+    static async resendOTP(req, res, next) {
+        try {
+            const { email } = req.body;
+            const user = await users_1.default.findOne({ email });
+            if (!user) {
+                return res.json({ ok: false, message: "User not found" });
+            }
+            const otp = Math.floor(100000 + Math.random() * 900000).toString();
+            user.otp = otp;
+            user.otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+            await user.save();
+            await email_service_1.default.sendOTPEmail(email, user.name, otp);
+            res.json({ ok: true });
+        }
+        catch (error) {
+            res.json({ ok: false, message: "Unexpected Server Error" });
         }
     }
     static async me(req, res, next) {

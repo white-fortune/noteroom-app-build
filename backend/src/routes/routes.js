@@ -19,6 +19,8 @@ function AuthRouter() {
     const authRouter = (0, express_1.Router)();
     authRouter.post("/login", auth_controller_1.default.login);
     authRouter.post("/signup", auth_controller_1.default.signup);
+    authRouter.post("/verify-email", auth_controller_1.default.verifyEmail);
+    authRouter.post("/resend-otp", auth_controller_1.default.resendOTP);
     authRouter.post("/me", auth_controller_1.default.me);
     authRouter.post("/google", auth_controller_1.default.googleAuth);
     return authRouter;
