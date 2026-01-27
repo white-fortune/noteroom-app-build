@@ -21,6 +21,8 @@ function AuthRouter() {
     authRouter.post("/signup", auth_controller_1.default.signup);
     authRouter.post("/verify-email", auth_controller_1.default.verifyEmail);
     authRouter.post("/resend-otp", auth_controller_1.default.resendOTP);
+    authRouter.post("/forgot-password", auth_controller_1.default.forgotPassword);
+    authRouter.post("/reset-password", auth_controller_1.default.resetPassword);
     authRouter.post("/me", auth_controller_1.default.me);
     authRouter.post("/google", auth_controller_1.default.googleAuth);
     return authRouter;

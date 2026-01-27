@@ -123,6 +123,44 @@ class AuthController {
             res.json({ ok: false, message: "Unexpected Server Error" });
         }
     }
+    static async forgotPassword(req, res, next) {
+        try {
+            const { email } = req.body;
+            const user = await users_1.default.findOne({ email });
+            if (!user) {
+                return res.json({ ok: false, message: "User not found" });
+            }
+            const otp = Math.floor(100000 + Math.random() * 900000).toString();
+            user.otp = otp;
+            user.otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+            await user.save();
+            await email_service_1.default.sendOTPEmail(email, user.name, otp);
+            res.json({ ok: true, maskedEmail: (0, utils_1.maskEmail)(email) });
+        }
+        catch (error) {
+            res.json({ ok: false, message: "Unexpected Server Error" });
+        }
+    }
+    static async resetPassword(req, res, next) {
+        try {
+            const { email, otp, newPassword } = req.body;
+            const user = await users_1.default.findOne({ email, otp });
+            if (!user) {
+                return res.json({ ok: false, message: "Invalid or expired verification code" });
+            }
+            if (user.otpExpiry && user.otpExpiry < new Date()) {
+                return res.json({ ok: false, message: "Verification code has expired" });
+            }
+            user.password = newPassword;
+            user.otp = undefined;
+            user.otpExpiry = undefined;
+            await user.save();
+            res.json({ ok: true });
+        }
+        catch (error) {
+            res.json({ ok: false, message: "Unexpected Server Error" });
+        }
+    }
     static async me(req, res, next) {
         try {
             const { token } = req.body;
