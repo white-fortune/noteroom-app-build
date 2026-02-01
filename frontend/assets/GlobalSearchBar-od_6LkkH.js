@@ -1,6 +1,0 @@
-import{r,j as e}from"./index-B7SX3Qtt.js";import{u as x}from"./NavigationPanelContext-Cyymw_Dx.js";const c=r.createContext(null);function p({children:t}){const[s,a]=r.useState(""),[n,o]=r.useState("Search NoteRoom");return e.jsx(c,{value:{searchQuery:[s,a],placeholder:[n,o]},children:t})}function i(){const t=r.useContext(c);if(!t)throw new Error("useSearchContext must be used within a SearchProvider");return t}function d(){const{searchQuery:[t,s],placeholder:[a]}=i(),{navElements:[n]}=x(),o=!!n.mobile?.left;return e.jsx("div",{className:`${o?"flex":"hidden"} xl:block flex-1 max-w-[511px]`,children:e.jsxs("div",{className:`search-bar\r
-				flex flex-row items-center gap-2.5\r
-				bg-white pl-5 pr-[45px] h-[44px]\r
-				rounded-[10px] shadow-[0px_0px_2.5px_rgba(0,0,0,0.25)]\r
-				w-full\r
-			`,children:[e.jsx("div",{className:"search-icon flex justify-center items-center p-[1.67px]",children:e.jsx("img",{src:"/post/search.svg",alt:"search",className:"w-[16.67px] h-[16.67px] object-contain"})}),e.jsx("div",{className:"search-input flex-1 flex items-center",children:e.jsx("input",{type:"text",placeholder:a,value:t,onChange:l=>s(l.target.value),className:"w-full bg-transparent border-none outline-none text-[15px] font-medium font-inter text-[#4D4D4D] placeholder:text-[#4D4D4D]"})})]})})}export{d as G,p as S,i as u};

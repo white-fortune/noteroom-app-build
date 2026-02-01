@@ -1,1 +1,0 @@
-import{r as t,j as s}from"./index-B7SX3Qtt.js";const e=t.createContext(null);function u({children:n}){const[a,o]=t.useState({desktop:{show:!0}});return s.jsx(e,{value:{navElements:[a,o]},children:n})}function i(){return t.useContext(e)}export{u as N,i as u};
