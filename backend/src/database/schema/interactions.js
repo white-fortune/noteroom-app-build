@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.postInteractionModel = exports.commentInteractionModel = exports.baseInteractionModel = void 0;
+exports.pollInteractionModel = exports.postInteractionModel = exports.commentInteractionModel = exports.baseInteractionModel = void 0;
 const mongoose_1 = require("mongoose");
 const baseInteractionOptions = {
     discriminatorKey: 'interactionType',
@@ -19,7 +19,7 @@ const baseInteractionSchema = new mongoose_1.Schema({
     },
     interactionType: {
         type: String,
-        enum: ["comment", "post"],
+        enum: ["comment", "post", "poll"],
         required: true
     }
 }, baseInteractionOptions);
@@ -51,3 +51,15 @@ const postInteractionSchema = new mongoose_1.Schema({
 });
 const postInteractionModel = baseInteractionModel.discriminator('post', postInteractionSchema);
 exports.postInteractionModel = postInteractionModel;
+const pollInteractionSchema = new mongoose_1.Schema({
+    postID: {
+        type: String,
+        required: true
+    },
+    optionID: {
+        type: String,
+        required: true
+    }
+});
+const pollInteractionModel = baseInteractionModel.discriminator('poll', pollInteractionSchema);
+exports.pollInteractionModel = pollInteractionModel;

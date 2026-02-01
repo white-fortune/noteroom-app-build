@@ -46,5 +46,41 @@ class MediaHandlerController {
             res.json({ ok: false });
         }
     }
+    static async uploadEditorImage(req, res) {
+        try {
+            const file = req.file;
+            if (!file) {
+                return res.json({ success: 0, message: "No file uploaded" });
+            }
+            res.json({
+                success: 1,
+                file: {
+                    url: `/api/uploads/${file.filename}`
+                }
+            });
+        }
+        catch (error) {
+            console.error("Editor image upload error:", error);
+            res.json({ success: 0, message: "Upload failed" });
+        }
+    }
+    static async uploadEditorImageByUrl(req, res) {
+        try {
+            const { url } = req.body;
+            if (!url) {
+                return res.json({ success: 0, message: "No URL provided" });
+            }
+            res.json({
+                success: 1,
+                file: {
+                    url: url
+                }
+            });
+        }
+        catch (error) {
+            console.error("Editor image by URL error:", error);
+            res.json({ success: 0, message: "Upload failed" });
+        }
+    }
 }
 exports.default = MediaHandlerController;

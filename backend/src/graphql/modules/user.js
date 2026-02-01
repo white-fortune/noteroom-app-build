@@ -19,6 +19,46 @@ exports.BaseUserInterface.implement({
         about: t.exposeString("about"),
         profileImageUrl: t.exposeString("profileImageUrl"),
         coverImageUrl: t.exposeString("coverImageUrl"),
+        followersCount: t.int({
+            resolve: async (parent) => {
+                const user = await users_1.default.findOne({ username: parent.username }, { _id: 1 });
+                if (!user)
+                    return 0;
+                const stats = await users_service_1.default.getFollowStats(user._id);
+                return stats.followersCount;
+            }
+        }),
+        followingCount: t.int({
+            resolve: async (parent) => {
+                const user = await users_1.default.findOne({ username: parent.username }, { _id: 1 });
+                if (!user)
+                    return 0;
+                const stats = await users_service_1.default.getFollowStats(user._id);
+                return stats.followingCount;
+            }
+        }),
+        isFollowing: t.boolean({
+            resolve: async (parent, __args, ctx) => {
+                const authUser = ctx.req.authUser;
+                if (!authUser || !authUser._id)
+                    return false;
+                const targetUser = await users_1.default.findOne({ username: parent.username }, { _id: 1 });
+                if (!targetUser || !targetUser._id)
+                    return false;
+                return users_service_1.default.isFollowing(authUser._id, targetUser._id.toString());
+            }
+        }),
+        followsYou: t.boolean({
+            resolve: async (parent, __args, ctx) => {
+                const authUser = ctx.req.authUser;
+                if (!authUser || !authUser._id)
+                    return false;
+                const targetUser = await users_1.default.findOne({ username: parent.username }, { _id: 1 });
+                if (!targetUser || !targetUser._id)
+                    return false;
+                return users_service_1.default.isFollowing(targetUser._id.toString(), authUser._id);
+            }
+        }),
         posts: t.field({
             type: [post_1.PostWithViewerUserType],
             resolve: async (parent, __args, ctx) => {
@@ -26,7 +66,7 @@ exports.BaseUserInterface.implement({
                     const authUser = ctx.req.authUser;
                     const profileUsername = parent.username;
                     const profileUserID = await users_1.default.findOne({ username: profileUsername }, { _id: 1 });
-                    if (!profileUserID?._id)
+                    if (!profileUserID || !profileUserID?._id)
                         return null;
                     const response = await posts_service_1.default.getPosts({ author: profileUserID._id });
                     if (!response.ok)
@@ -84,6 +124,16 @@ builder_1.builder.queryType({
                     return null;
                 }
             }
+        }),
+        searchUsers: t.field({
+            type: [exports.UserType],
+            args: {
+                query: t.arg.string({ required: true })
+            },
+            resolve: async (_parent, args) => {
+                const response = await users_service_1.default.searchUsers(args.query);
+                return response.ok ? (response.users || []) : [];
+            }
         })
     })
 });
@@ -105,6 +155,36 @@ builder_1.builder.mutationType({
                 catch (error) {
                     return null;
                 }
+            }
+        }),
+        followUser: t.boolean({
+            args: {
+                username: t.arg.string({ required: true })
+            },
+            resolve: async (_parent, args, ctx) => {
+                const authUser = ctx.req.authUser;
+                if (!authUser || !authUser._id)
+                    return false;
+                const targetUser = await users_1.default.findOne({ username: args.username }, { _id: 1 });
+                if (!targetUser || !targetUser._id)
+                    return false;
+                const response = await users_service_1.default.followUser(authUser._id, targetUser._id.toString());
+                return response.ok;
+            }
+        }),
+        unfollowUser: t.boolean({
+            args: {
+                username: t.arg.string({ required: true })
+            },
+            resolve: async (_parent, args, ctx) => {
+                const authUser = ctx.req.authUser;
+                if (!authUser || !authUser._id)
+                    return false;
+                const targetUser = await users_1.default.findOne({ username: args.username }, { _id: 1 });
+                if (!targetUser || !targetUser._id)
+                    return false;
+                const response = await users_service_1.default.unfollowUser(authUser._id, targetUser._id.toString());
+                return response.ok;
             }
         })
     })

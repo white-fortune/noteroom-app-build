@@ -28,11 +28,23 @@ const basePostSchema = new mongoose_1.Schema({
         type: String,
         default: null
     },
+    richContent: {
+        type: mongoose_1.Schema.Types.Mixed,
+        default: null
+    },
     replyCount: {
         type: Number,
         default: 0
     },
     reactCount: {
+        type: Number,
+        default: 0
+    },
+    shareCount: {
+        type: Number,
+        default: 0
+    },
+    viewCount: {
         type: Number,
         default: 0
     },

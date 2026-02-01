@@ -4,7 +4,7 @@ exports.env = env;
 exports.config = config;
 const dotenv_1 = require("dotenv");
 const path_1 = require("path");
-(0, dotenv_1.config)({ path: (0, path_1.join)(__dirname, "../../.env") });
+(0, dotenv_1.config)({ path: (0, path_1.join)(__dirname, "../.env") });
 function env(key, default_) {
     const value = process.env[key];
     if (value) {

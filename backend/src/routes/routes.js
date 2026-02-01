@@ -14,6 +14,7 @@ const multer_1 = __importDefault(require("multer"));
 const mediahandler_controller_1 = __importDefault(require("../app/controllers/mediahandler.controller"));
 const express_2 = __importDefault(require("express"));
 const jwt_service_1 = __importDefault(require("../app/services/jwt.service"));
+const link_controller_1 = __importDefault(require("../app/controllers/link.controller"));
 const webRouter = (0, express_1.Router)();
 function AuthRouter() {
     const authRouter = (0, express_1.Router)();
@@ -30,7 +31,7 @@ function AuthRouter() {
 function MediaHandlerRouter() {
     const mediaHandlerRouter = (0, express_1.Router)();
     const storage = multer_1.default.diskStorage({
-        destination: (0, path_1.join)(__dirname, "../../../uploads"),
+        destination: (0, path_1.join)(__dirname, "../../uploads"),
         filename: function (_req, file, cb) {
             const ext = (0, path_1.extname)(file.originalname);
             cb(null, Date.now() + "-" + Math.random() + ext);
@@ -42,6 +43,8 @@ function MediaHandlerRouter() {
         { name: "user-cover-pic", maxCount: 1 },
     ]), mediahandler_controller_1.default.updateUserImages);
     mediaHandlerRouter.post("/post", upload.array("media"), mediahandler_controller_1.default.updatePostMedia);
+    mediaHandlerRouter.post("/editor-upload", upload.single("image"), mediahandler_controller_1.default.uploadEditorImage);
+    mediaHandlerRouter.post("/editor-upload-by-url", mediahandler_controller_1.default.uploadEditorImageByUrl);
     return mediaHandlerRouter;
 }
 function GQLRouter() {
@@ -56,8 +59,11 @@ function GQLRouter() {
 }
 function WebRouter() {
     webRouter.use("/auth", AuthRouter());
-    webRouter.use("/uploads", express_2.default.static((0, path_1.join)(__dirname, "../../../uploads")));
+    webRouter.use("/uploads", express_2.default.static((0, path_1.join)(__dirname, "../../uploads")));
     webRouter.use(async (req, res, next) => {
+        if (req.body?.query?.includes("IntrospectionQuery") || req.body?.query?.includes("__schema")) {
+            return next();
+        }
         const token = req.headers["token"];
         if (!token) {
             return res.json({ ok: false });
@@ -76,5 +82,6 @@ function WebRouter() {
     });
     webRouter.use("/graphql", GQLRouter());
     webRouter.use("/media", MediaHandlerRouter());
+    webRouter.get("/link-preview", link_controller_1.default.getLinkPreview.bind(link_controller_1.default));
     return webRouter;
 }
